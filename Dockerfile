@@ -1,13 +1,16 @@
 # Dockerfile
 FROM gcc:latest
 
-RUN apt update && apt install -y gdb
+RUN apt update && apt install -y gdb make cmake
 
 # Set the working directory
 WORKDIR /app
 
 # Copy the source code and header file into the container
-COPY sum.c sum_worker.c sum.h ./
+COPY *.c *.h  CMakeLists.txt ./
+
+# Generate the Makefile using CMake
+RUN cmake .
 
 # Compile the C programs
-RUN gcc -g -o sum sum.c -lpthread -lrt && gcc -g -o sum_worker sum_worker.c -lpthread -lrt
+RUN make
