@@ -1,11 +1,14 @@
 // sum_worker.c
 #include "sum.h"
-
+#include <mqueue.h> // include mqueue.h for POSIX message queues
 
 int main() {
-    // Open message queue and shared memory
-    key_t key = ftok("sum.c", 'A');
-    int msgid = msgget(key, 0666);
+    // Open POSIX message queue and shared memory
+    mqd_t mq = mq_open("/sum_queue", O_RDWR);
+    if (mq == (mqd_t)-1) {
+        perror("mq_open failed");
+        return EXIT_FAILURE;
+    }
 
     int shm_fd = shm_open("/global_sum", O_RDWR, 0666);
     struct global_sum *sum_ptr = mmap(0, sizeof(struct global_sum), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
@@ -16,7 +19,10 @@ int main() {
 
     while (1) {
         struct msg_request request;
-        msgrcv(msgid, &request, sizeof(request) - sizeof(long), 1, 0);
+        if (mq_receive(mq, (char *)&request, sizeof(request), NULL) == -1) {
+            perror("mq_receive failed");
+            return EXIT_FAILURE;
+        }
 
         if (request.start == -1) { // Check for termination signal
             break;
