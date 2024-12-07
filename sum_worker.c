@@ -1,11 +1,16 @@
+// sum_worker.c
+// Name: Yannick Fenz'l
+// Matrikelnummer: ***REMOVED***
+// Date: 07.12.2024
+
 #include "sum.h"
-#include <mqueue.h>  // For POSIX message queues
-#include <fcntl.h>   // For file control constants
-#include <sys/mman.h> // For memory mapping
-#include <semaphore.h> // For semaphores
-#include <stdio.h>   // For standard I/O
-#include <stdlib.h>  // For standard library functions
-#include <unistd.h>  // For POSIX constants and functions
+#include <mqueue.h>  // POSIX message queues
+#include <fcntl.h>   // file control constants
+#include <sys/mman.h> // memory mapping
+#include <semaphore.h> // semaphores
+#include <stdio.h>   // standard I/O
+#include <stdlib.h>  // standard library functions
+#include <unistd.h>  // POSIX constants and functions
 
 int main() {
     // Open the POSIX message queue

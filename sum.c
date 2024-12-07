@@ -1,3 +1,8 @@
+// sum.c
+// Name: Yannick Fenz'l
+// Matrikelnummer: ***REMOVED***
+// Date: 07.12.2024
+
 #include "sum.h" // Include the header file
 #include <sys/wait.h> // wait() to handle child processes
 #include <mqueue.h>   // POSIX message queues
