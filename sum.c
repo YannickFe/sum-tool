@@ -106,6 +106,14 @@ int main(int argc, char *argv[]) {
         wait(NULL);
     }
 
+    // Validate the result (although no unhandled error should occur)
+    // The sum of the first n natural numbers is n * (n + 1) / 2
+    long expected = n * (n + 1) / 2;
+    if (sum_ptr->total != expected) {
+        fprintf(stderr, "Error: expected %ld, got %ld\n", expected, sum_ptr->total);
+        return EXIT_FAILURE;
+    }
+
     // Display the final result
     printf("Result: %ld\n", sum_ptr->total);
 
