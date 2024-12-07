@@ -1,29 +1,36 @@
-// sum.c
 #include "sum.h"
-#include <sys/wait.h> // include wait.h for wait() function
-#include <mqueue.h>   // include mqueue.h for POSIX message queues
+#include <sys/wait.h> // For wait() to handle child processes
+#include <mqueue.h>   // For POSIX message queues
+#include <fcntl.h>    // For file control constants
+#include <sys/mman.h> // For shared memory
+#include <semaphore.h> // For semaphores
+#include <stdio.h>    // For standard I/O
+#include <stdlib.h>   // For standard library functions
+#include <unistd.h>   // For fork(), execlp(), and other POSIX functions
 
-#define MAX_MSG_SIZE sizeof(struct msg_request) // Define maximum message size
+#define MAX_MSG_SIZE sizeof(struct msg_request) // Maximum size of a message
 
 int main(int argc, char *argv[]) {
+    // Validate input arguments
     if (argc != 4) {
         fprintf(stderr, "Usage: %s n chunksize workers\n", argv[0]);
         return EXIT_FAILURE;
     }
 
-    long n = atol(argv[1]);
-    long chunksize = atol(argv[2]);
-    int workers = atoi(argv[3]);
+    long n = atol(argv[1]);         // Total range to sum
+    long chunksize = atol(argv[2]); // Size of each chunk
+    int workers = atoi(argv[3]);    // Number of worker processes
 
+    // Validate argument ranges
     if (n <= 0 || chunksize < 1 || chunksize > MAX_CHUNKSIZE || workers < 1 || workers > MAX_WORKERS) {
         fprintf(stderr, "Invalid parameters.\n");
         return EXIT_FAILURE;
     }
 
-    // Create POSIX message queue with attributes
+    // Initialize the message queue
     struct mq_attr attr;
-    attr.mq_flags = 0;
-    attr.mq_maxmsg = 10; // Maximum number of messages in the queue
+    attr.mq_flags = 0; // Blocking mode
+    attr.mq_maxmsg = 10; // Maximum number of messages
     attr.mq_msgsize = MAX_MSG_SIZE; // Maximum message size
     attr.mq_curmsgs = 0;
 
@@ -33,55 +40,76 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    // Create shared memory for global sum
+    // Create shared memory for storing the global sum
     int shm_fd = shm_open("/global_sum", O_CREAT | O_RDWR, 0666);
-    ftruncate(shm_fd, sizeof(struct global_sum));
-    struct global_sum *sum_ptr = mmap(0, sizeof(struct global_sum), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
-    sum_ptr->total = 0;
+    if (shm_fd == -1) {
+        perror("shm_open failed");
+        return EXIT_FAILURE;
+    }
 
-    // Create semaphore for synchronization
+    // Set the size of shared memory
+    if (ftruncate(shm_fd, sizeof(struct global_sum)) == -1) {
+        perror("ftruncate failed");
+        return EXIT_FAILURE;
+    }
+
+    // Map shared memory to the process's address space
+    struct global_sum *sum_ptr = mmap(0, sizeof(struct global_sum), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
+    if (sum_ptr == MAP_FAILED) {
+        perror("mmap failed");
+        return EXIT_FAILURE;
+    }
+    sum_ptr->total = 0; // Initialize the global sum to 0
+
+    // Create a semaphore for synchronization
     sem_t *sem = sem_open("/sem", O_CREAT, 0666, 1);
+    if (sem == SEM_FAILED) {
+        perror("sem_open failed");
+        return EXIT_FAILURE;
+    }
 
     // Fork worker processes
     for (int i = 0; i < workers; i++) {
         if (fork() == 0) {
+            // Replace the child process with the worker executable
             execlp("./sum_worker", "sum_worker", NULL);
             perror("execlp failed");
             exit(EXIT_FAILURE);
         }
     }
 
-    // Send tasks to workers via message queue
+    // Divide the range into chunks and send tasks to the workers
     for (long start = 1; start <= n; start += chunksize) {
         long end = (start + chunksize - 1 > n) ? n : start + chunksize - 1;
+
         struct msg_request request;
         request.start = start;
         request.end = end;
+
         if (mq_send(mq, (const char *)&request, sizeof(request), 0) == -1) {
             perror("mq_send failed");
             return EXIT_FAILURE;
         }
     }
 
-    // Send termination messages to workers
+    // Send termination signals to all workers
     for (int i = 0; i < workers; i++) {
-        struct msg_request end_request;
-        end_request.start = -1; // Indicate termination
-        end_request.end = -1;
+        struct msg_request end_request = { .start = -1, .end = -1 };
         if (mq_send(mq, (const char *)&end_request, sizeof(end_request), 0) == -1) {
             perror("mq_send failed");
             return EXIT_FAILURE;
         }
     }
 
-    // Wait for all children to finish
+    // Wait for all worker processes to finish
     for (int i = 0; i < workers; i++) {
         wait(NULL);
     }
 
+    // Display the final result
     printf("Result: %ld\n", sum_ptr->total);
 
-    // Cleanup
+    // Clean up resources
     munmap(sum_ptr, sizeof(struct global_sum));
     shm_unlink("/global_sum");
     mq_close(mq);
