@@ -1,7 +1,5 @@
+// Name: Yannick Fenz'l; Matrikelnummer: ***REMOVED***; Date: 07.12.2024
 // sum_worker.c
-// Name: Yannick Fenz'l
-// Matrikelnummer: ***REMOVED***
-// Date: 07.12.2024
 
 #include "sum.h"
 #include <mqueue.h>  // POSIX message queues

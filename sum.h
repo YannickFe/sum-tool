@@ -1,3 +1,4 @@
+// Name: Yannick Fenz'l; Matrikelnummer: ***REMOVED***; Date: 07.12.2024
 // sum.h
 #ifndef SUM_H
 #define SUM_H
