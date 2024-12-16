@@ -12,4 +12,5 @@ COPY *.c *.h  Makefile ./
 # Compile the C programs
 RUN make
 
+RUN make test_sum
 RUN ./test_sum

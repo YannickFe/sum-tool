@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -std=c11 -Wall -pthread
 
 # Ziel-Programme
-TARGETS = sum sum_worker test_sum
+TARGETS = sum sum_worker
 
 # Abhängigkeiten für jedes Zielprogramm
 all: $(TARGETS)
