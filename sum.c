@@ -16,8 +16,6 @@
 #include <limits.h> // LONG_MAX validation
 #include <string.h> // strerror
 
-#define MAX_MSG_SIZE sizeof(struct msg_request)
-#define TERMINATION_SIGNAL -1 // Macro for termination signal
 #define WORKER_EXECUTABLE "./sum_worker"
 
 long gauss_sum(long n) {
@@ -54,7 +52,7 @@ int main(int argc, char *argv[]) {
     attr.mq_msgsize = MAX_MSG_SIZE; // Maximum message size
     attr.mq_curmsgs = 0;
 
-    mqd_t mq = mq_open("/sum_queue", O_CREAT | O_RDWR, 0666, &attr);
+    mqd_t mq = mq_open(MQ_NAME, O_CREAT | O_RDWR, 0666, &attr);
     if (mq == (mqd_t)-1) {
         fprintf(stderr, "mq_open failed: %s\n", strerror(errno));
         return EXIT_FAILURE;
@@ -65,7 +63,7 @@ int main(int argc, char *argv[]) {
     if (mq_getattr(mq, &actual_attr) == -1) {
         fprintf(stderr, "mq_getattr failed: %s\n", strerror(errno));
         mq_close(mq);
-        mq_unlink("/sum_queue");
+        mq_unlink(MQ_NAME);
         return EXIT_FAILURE;
     }
 
@@ -74,20 +72,20 @@ int main(int argc, char *argv[]) {
     }
 
     // Create shared memory for storing the global sum
-    int shm_fd = shm_open("/global_sum", O_CREAT | O_RDWR, 0666);
+    int shm_fd = shm_open(SHM_NAME, O_CREAT | O_RDWR, 0666);
     if (shm_fd == -1) {
         fprintf(stderr, "shm_open failed: %s\n", strerror(errno));
         mq_close(mq);
-        mq_unlink("/sum_queue");
+        mq_unlink(MQ_NAME);
         return EXIT_FAILURE;
     }
 
     // Set the size of shared memory
     if (ftruncate(shm_fd, sizeof(struct global_sum)) == -1) {
         fprintf(stderr, "ftruncate failed: %s\n", strerror(errno));
-        shm_unlink("/global_sum");
+        shm_unlink(SHM_NAME);
         mq_close(mq);
-        mq_unlink("/sum_queue");
+        mq_unlink(MQ_NAME);
         return EXIT_FAILURE;
     }
 
@@ -95,21 +93,21 @@ int main(int argc, char *argv[]) {
     struct global_sum *sum_ptr = mmap(0, sizeof(struct global_sum), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
     if (sum_ptr == MAP_FAILED) {
         fprintf(stderr, "mmap failed: %s\n", strerror(errno));
-        shm_unlink("/global_sum");
+        shm_unlink(SHM_NAME);
         mq_close(mq);
-        mq_unlink("/sum_queue");
+        mq_unlink(MQ_NAME);
         return EXIT_FAILURE;
     }
     sum_ptr->total = 0; // Initialize the global sum to 0
 
     // Create a semaphore for synchronization
-    sem_t *sem = sem_open("/sem", O_CREAT, 0666, 1);
+    sem_t *sem = sem_open(SEM_NAME, O_CREAT, 0666, 1);
     if (sem == SEM_FAILED) {
         fprintf(stderr, "sem_open failed: %s\n", strerror(errno));
         munmap(sum_ptr, sizeof(struct global_sum));
-        shm_unlink("/global_sum");
+        shm_unlink(SHM_NAME);
         mq_close(mq);
-        mq_unlink("/sum_queue");
+        mq_unlink(MQ_NAME);
         return EXIT_FAILURE;
     }
 
@@ -167,11 +165,11 @@ int main(int argc, char *argv[]) {
 
     // Clean up resources
     munmap(sum_ptr, sizeof(struct global_sum));
-    shm_unlink("/global_sum");
+    shm_unlink(SHM_NAME);
     mq_close(mq);
-    mq_unlink("/sum_queue");
+    mq_unlink(MQ_NAME);
     sem_close(sem);
-    sem_unlink("/sem");
+    sem_unlink(SEM_NAME);
 
     return EXIT_SUCCESS;
 }

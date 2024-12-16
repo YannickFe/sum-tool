@@ -14,6 +14,13 @@
 
 #define MAX_WORKERS 9
 #define MAX_CHUNKSIZE 9999
+#define MAX_MSG_SIZE sizeof(struct msg_request)
+
+#define TERMINATION_SIGNAL -1 // Macro for termination signal
+
+#define MQ_NAME "/sum_queue" // Message queue name
+#define SHM_NAME "/global_sum" // Shared memory name
+#define SEM_NAME "/sem" // Semaphore name
 
 // Message structure for passing requests
 struct msg_request {

@@ -14,14 +14,14 @@
 
 int main() {
     // Open the POSIX message queue
-    mqd_t mq = mq_open("/sum_queue", O_RDWR);
+    mqd_t mq = mq_open(MQ_NAME, O_RDWR);
     if (mq == (mqd_t)-1) {
         perror("mq_open failed");
         return EXIT_FAILURE;
     }
 
     // Open shared memory for accessing global sum structure
-    int shm_fd = shm_open("/global_sum", O_RDWR, 0666);
+    int shm_fd = shm_open(SHM_NAME, O_RDWR, 0666);
     if (shm_fd == -1) {
         perror("shm_open failed");
         return EXIT_FAILURE;
@@ -35,7 +35,7 @@ int main() {
     }
 
     // Open semaphore for synchronization
-    sem_t *sem = sem_open("/sem", O_RDWR);
+    sem_t *sem = sem_open(SEM_NAME, O_RDWR);
     if (sem == SEM_FAILED) {
         perror("sem_open failed");
         return EXIT_FAILURE;
@@ -53,7 +53,7 @@ int main() {
         }
 
         // Check if the request signals termination
-        if (request.start == -1) {
+        if (request.start == TERMINATION_SIGNAL) {
             break;
         }
 
