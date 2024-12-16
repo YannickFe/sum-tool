@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
+// This is a very basic test implementation for the sum program
+
 long calculate_expected_sum(long n) {
     return (n * (n + 1)) / 2;
 }

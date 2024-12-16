@@ -1,0 +1,21 @@
+CC = gcc
+CFLAGS = -std=c11 -Wall -pthread
+
+# Ziel-Programme
+TARGETS = sum sum_worker test_sum
+
+# Abhängigkeiten für jedes Zielprogramm
+all: $(TARGETS)
+
+sum: sum.c sum.h
+	$(CC) $(CFLAGS) -o $@ sum.c
+
+sum_worker: sum_worker.c
+	$(CC) $(CFLAGS) -o $@ sum_worker.c
+
+test_sum: test_sum.c
+	$(CC) $(CFLAGS) -o $@ test_sum.c
+
+# Clean-Up
+clean:
+	rm -f $(TARGETS)

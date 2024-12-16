@@ -7,10 +7,9 @@ RUN apt update && apt install -y gdb make cmake
 WORKDIR /app
 
 # Copy the source code and header file into the container
-COPY *.c *.h  CMakeLists.txt ./
-
-# Generate the Makefile using CMake
-RUN cmake .
+COPY *.c *.h  Makefile ./
 
 # Compile the C programs
 RUN make
+
+RUN ./test_sum
