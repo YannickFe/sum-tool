@@ -25,7 +25,6 @@
 
 // Message structure for passing requests
 struct msg_request {
-    long mtype; // Message type
     long start; // Start of the range
     long end;   // End of the range
 };
