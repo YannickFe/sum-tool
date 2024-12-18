@@ -19,6 +19,8 @@
 
 #define TERMINATION_SIGNAL -1 // Macro for termination signal
 
+#define PERM 0666 // Permissions for message queue, shared memory, and semaphore
+
 #define MQ_NAME "/sum_queue" // Message queue name
 #define SHM_NAME "/global_sum" // Shared memory name
 #define SEM_NAME "/sem" // Semaphore name

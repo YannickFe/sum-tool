@@ -19,7 +19,7 @@ int main() {
     }
 
     // Open shared memory for accessing global sum structure
-    int shm_fd = shm_open(SHM_NAME, O_RDWR, 0666);
+    int shm_fd = shm_open(SHM_NAME, O_RDWR, PERM);
     if (shm_fd == -1) {
         perror("shm_open failed");
         return EXIT_FAILURE;

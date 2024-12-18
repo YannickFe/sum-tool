@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
     attr.mq_msgsize = MAX_MSG_SIZE; // Maximum message size
     attr.mq_curmsgs = 0;
 
-    mqd_t mq = mq_open(MQ_NAME, O_CREAT | O_RDWR, 0666, &attr);
+    mqd_t mq = mq_open(MQ_NAME, O_CREAT | O_RDWR, PERM, &attr);
     if (mq == (mqd_t)-1) {
         fprintf(stderr, "mq_open failed: %s\n", strerror(errno));
         return EXIT_FAILURE;
@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Create shared memory for storing the global sum
-    int shm_fd = shm_open(SHM_NAME, O_CREAT | O_RDWR, 0600);
+    int shm_fd = shm_open(SHM_NAME, O_CREAT | O_RDWR, PERM);
     if (shm_fd == -1) {
         fprintf(stderr, "shm_open failed: %s\n", strerror(errno));
         mq_close(mq);
@@ -99,7 +99,7 @@ int main(int argc, char *argv[]) {
     sum_ptr->total = 0; // Initialize the global sum to 0
 
     // Create a semaphore for synchronization
-    sem_t *sem = sem_open(SEM_NAME, O_CREAT, 0666, 1);
+    sem_t *sem = sem_open(SEM_NAME, O_CREAT, PERM, 1);
     if (sem == SEM_FAILED) {
         fprintf(stderr, "sem_open failed: %s\n", strerror(errno));
         munmap(sum_ptr, sizeof(struct global_sum));
