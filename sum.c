@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Create shared memory for storing the global sum
-    int shm_fd = shm_open(SHM_NAME, O_CREAT | O_RDWR, 0666);
+    int shm_fd = shm_open(SHM_NAME, O_CREAT | O_RDWR, 0600);
     if (shm_fd == -1) {
         fprintf(stderr, "shm_open failed: %s\n", strerror(errno));
         mq_close(mq);
