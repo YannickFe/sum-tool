@@ -19,7 +19,7 @@
 # Dockerfile
 FROM gcc:latest
 
-RUN apt update && apt install -y gdb make cmake
+RUN apt update && apt install -y gdb make
 
 # Set the working directory
 WORKDIR /app
