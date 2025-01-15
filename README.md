@@ -1,6 +1,11 @@
 # Sum Calculation Project
 
 This project calculates the sum of the first `n` natural numbers using multiple worker processes. It uses POSIX message queues, shared memory, and semaphores for inter-process communication and synchronization.
+The sum tool is implemented in C and can be built and run on any POSIX-compliant system.
+
+It should be noted that the project is not optimized for performance, but rather for educational purposes. 
+The goal is to demonstrate how to use POSIX IPC mechanisms to coordinate multiple processes and share resources. #
+If you just want to calculate the sum of the first `n` natural numbers, you should use the Gauss formula `n * (n + 1) / 2` to get the result in constant time.
 
 ## Project Structure
 
