@@ -16,6 +16,9 @@ sum_worker: sum_worker.c
 test_sum: test_sum.c
 	$(CC) $(CFLAGS) -o $@ test_sum.c
 
+docker:
+	 docker build -t sum . &&  docker run -it --rm --name sum sum bash
+
 # Clean-Up
 clean:
 	rm -f $(TARGETS)
